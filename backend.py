@@ -213,7 +213,7 @@ async def ask_question(data: Question):
         # Rechercher les chunks dans Pinecone
         results = pinecone_index.query(
             vector=question_embedding,
-            top_k=1,
+            top_k=3,
             include_metadata=True,
             filter={"document_id": document_id}
         )
@@ -222,10 +222,8 @@ async def ask_question(data: Question):
             return {"response": "Aucune correspondance trouvée pour ce document. Vérifiez le contenu téléversé."}
 
         
-        # Préparer le chunk récupéré
-        relevant_chunk = (
-    results.matches[0].metadata.get("chunk") if results.matches and results.matches[0].metadata.get("chunk") else ""
-)
+        relevant_chunk = "\n".join(
+            match.metadata.get("chunk") for match in results.matches if match.metadata.get("chunk"))
 
 
         # Appeler Ollama
